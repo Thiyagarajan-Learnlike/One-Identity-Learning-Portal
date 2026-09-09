@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Identity Developer Onboarding & VM Setup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            purpleBrand: {
+              50: '#f8f5fc',
+              100: '#f0ebf8',
+              200: '#e1d5f2',
+              500: '#6f42c1',
+              600: '#5e35b1',
+              700: '#4a2896',
+              900: '#2c125e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .hidden-view { display: none !important; }
+    
+    .code-box {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border: 1px solid #334155 !important;
+    }
+    .code-box code, .code-box pre {
+      color: #c084fc !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* Strict Single-Page Print Layout Optimization */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 6mm 8mm;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 10px !important;
+        line-height: 1.15 !important;
+      }
+      header, nav, main, .no-print, button, #profile-modal {
+        display: none !important;
+      }
+      #print-report {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100vh !important;
+        max-height: 280mm !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        justify-content: space-between !important;
+      }
+      .print-card {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 10px !important;
+        background-color: #f8f5fc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 9px !important;
+      }
+      th, td {
+        padding: 2px 4px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        vertical-align: middle !important;
+      }
+      th {
+        background-color: #f0ebf8 !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    html.dark body { background-color: #0f172a !important; color: #f1f5f9 !important; }
+    html.dark header { background-color: #1e293b !important; border-color: #334155 !important; }
+    html.dark header h1 { color: #ffffff !important; }
+    html.dark .bg-white { background-color: #1e293b !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+    html.dark .bg-slate-50 { background-color: #0f172a !important; }
+    html.dark .bg-slate-100 { background-color: #334155 !important; color: #f8fafc !important; }
+    html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-slate-700 { color: #f1f5f9 !important; }
+    html.dark .text-slate-600, html.dark .text-slate-500 { color: #94a3b8 !important; }
+    html.dark .border-slate-200, html.dark .border-slate-100 { border-color: #334155 !important; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col antialiased">
+
+  <!-- Modal for Capturing Full Name & Designation -->
+  <div id="profile-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-purpleBrand-100 space-y-4">
+      <div class="space-y-1">
+        <h3 class="text-xl font-black text-slate-900">Welcome to Learnlike</h3>
+        <p class="text-xs text-slate-500">Please enter your profile details to personalize your learning track and summary report.</p>
+      </div>
+      <form onsubmit="saveUserProfile(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Full Name</label>
+          <input type="text" id="input-full-name" required placeholder="e.g. Alex Morgan" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-purpleBrand-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">Designation in Learnlike</label>
+          <input type="text" id="input-designation" required placeholder="e.g. Identity Engineer Trainee" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-purpleBrand-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700">
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-purpleBrand-600 hover:bg-purpleBrand-700 text-white font-bold text-sm rounded-xl transition shadow-md shadow-purpleBrand-500/20">
+          Start Learning Path
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header Section -->
+  <header class="bg-white/90 backdrop-blur border-b border-purpleBrand-100 p-4 sticky top-0 z-40 shadow-sm transition-colors duration-200">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div>
+          <h1 class="text-lg font-black text-slate-900 tracking-tight">One Identity <span class="text-purpleBrand-600">Learning Portal</span></h1>
+          <p id="user-display" class="text-xs text-slate-500 font-medium">Participant: -</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 no-print">
+        <button onclick="exportPDF()" class="px-3 py-1.5 rounded-lg bg-purpleBrand-600 hover:bg-purpleBrand-700 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+          📄 Print Summary
+        </button>
+        <button onclick="toggleTheme()" class="px-3 py-1.5 rounded-lg bg-purpleBrand-50 dark:bg-slate-700 hover:bg-purpleBrand-100 text-xs font-semibold border border-purpleBrand-200 dark:border-slate-600 transition flex items-center gap-1.5">
+          <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+        </button>
+        <button onclick="editProfile()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
+          Edit Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="max-w-7xl mx-auto flex gap-6 mt-3 border-t border-slate-200 dark:border-slate-700 pt-2 text-xs font-bold uppercase tracking-wider text-slate-500 no-print">
+      <button id="nav-modules-btn" onclick="showView('modules-view')" class="nav-btn text-purpleBrand-600 border-b-2 border-purpleBrand-500 pb-1 flex items-center gap-1.5">
+        📊 Linear Learning Path
+      </button>
+      <button id="nav-vm-btn" onclick="showView('vm-guide-view')" class="nav-btn pb-1 flex items-center gap-1.5">
+        🖥️ VM Setup & Steps
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content Body -->
+  <main class="max-w-7xl mx-auto p-4 md:p-6 flex-grow w-full">
+
+    <!-- LEARNING PATH VIEW -->
+    <section id="modules-view" class="space-y-8">
+      
+      <!-- Dashboard Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="p-5 rounded-2xl bg-white border border-purpleBrand-100 shadow-sm flex flex-col justify-between">
+          <p class="text-xs font-bold uppercase tracking-wider text-purpleBrand-700">Overall Progress</p>
+          <p id="stat-progress-pct" class="text-3xl font-black text-purpleBrand-600 mt-1">0%</p>
+          <div class="w-full bg-purpleBrand-50 h-2.5 rounded-full mt-3 overflow-hidden border border-purpleBrand-100">
+            <div id="stat-progress-bar" class="bg-purpleBrand-500 h-full transition-all duration-500 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-purpleBrand-100 shadow-sm flex flex-col justify-between">
+          <p class="text-xs font-bold uppercase tracking-wider text-purpleBrand-700">Modules Completed</p>
+          <p id="stat-completed-mods" class="text-3xl font-black text-purpleBrand-600 mt-1">0 / 23</p>
+          <p class="text-[11px] text-slate-400">3 Crash Courses + 20 Web Dev Modules</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-white border border-purpleBrand-100 shadow-sm flex flex-col justify-between">
+          <p class="text-xs font-bold uppercase tracking-wider text-purpleBrand-700">Completion Status</p>
+          <p id="stat-status-text" class="text-sm font-bold text-slate-700 mt-1">Not Started</p>
+          <button onclick="exportPDF()" class="mt-2 text-xs text-purpleBrand-600 hover:underline font-bold text-left">Generate 1-Page Report →</button>
+        </div>
+      </div>
+
+      <!-- Linear Path Container -->
+      <div id="linear-path-container" class="space-y-8 relative before:absolute before:inset-0 before:left-3 md:before:left-6 before:w-0.5 before:bg-purpleBrand-200"></div>
+
+    </section>
+
+    <!-- VM SETUP VIEW -->
+    <section id="vm-guide-view" class="hidden-view space-y-8">
+      <div class="p-6 md:p-8 bg-white rounded-2xl border border-purpleBrand-100 shadow-sm space-y-8">
+        
+        <!-- Header -->
+        <div class="border-b border-slate-200 pb-4">
+          <h2 class="text-2xl font-black text-slate-900">One Identity Manager – Installation & KT Guide</h2>
+          <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">This guide covers the complete setup process, including Virtual Machine access, project download, dependency installation, Angular CLI setup, module/component creation, and running the project.</p>
+        </div>
+
+        <!-- Part 1 – Accessing the Virtual Machines -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 1 – Accessing the Virtual Machines</h3>
+          
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">1. One Identity Manager Website</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400 font-semibold">Website:</p>
+            <p class="text-xs font-mono"><a href="https://oneidentity.onelogin.com/login2" target="_blank" class="text-purpleBrand-600 hover:underline">https://oneidentity.onelogin.com/login2</a></p>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">2. Login Credentials</h4>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li><b>Username:</b> To be provided by Learnlike Team</li>
+              <li><b>Password:</b> To be provided by Learnlike Team</li>
+            </ul>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">3. Two-Step Verification</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">After entering the username and password:</p>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li>You will be prompted to enter a Two-Step Verification (2FA) code.</li>
+              <li>The Learnlike Team will provide the 2FA code.</li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 2 – Starting and Accessing the Virtual Machines -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 2 – Starting and Accessing the Virtual Machines</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">4. Open the VM Portal</h4>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li>Open the One Identity Manager website.</li>
+              <li>Log in using the credentials provided by the Learnlike Team.</li>
+              <li>Navigate to the SkyTab portal.</li>
+              <li>Open the three Virtual Machines (VMs).</li>
+            </ul>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">5. Start the Virtual Machines</h4>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li>Click the Start button located at the top-right corner.</li>
+              <li>Do not start the Virtual Machines manually.</li>
+              <li>The VMs will start automatically in the following sequence:
+                <ol class="list-decimal pl-5 mt-1 font-semibold text-slate-800 dark:text-slate-200 space-y-0.5">
+                  <li>Administrator</li>
+                  <li>Database (DB)</li>
+                  <li>Client</li>
+                </ol>
+              </li>
+              <li>Wait until all three VMs have started successfully.</li>
+            </ul>
+            <p class="text-xs font-bold text-red-600 dark:text-red-400 mt-2">Important: Allow the VMs to start automatically in the specified sequence.</p>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">6. Access the Client VM</h4>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li>You only need to access the Client VM for development work.</li>
+              <li>The passwords for accessing each VM are available in the top toolbar of the VM window.</li>
+              <li>Log in to the Client VM using the provided credentials.</li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 3 – Downloading the Project -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 3 – Downloading the Project</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">7. Open the GitHub Repository</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Open the following GitHub repository:</p>
+            <p class="text-xs font-mono"><a href="https://github.com/OneIdentity/IdentityManager.Imx/tree/v92" target="_blank" class="text-purpleBrand-600 hover:underline">https://github.com/OneIdentity/IdentityManager.Imx/tree/v92</a></p>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">8. Clone or Download the Source Code</h4>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li>Clone or download the latest source code from the repository.</li>
+              <li>If the project is downloaded as a ZIP file, extract the project files.</li>
+              <li>Open the extracted project folder.</li>
+            </ul>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 4 – Installing Project Dependencies -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 4 – Installing Project Dependencies</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">9. Open the Terminal</h4>
+            <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+              <li>Open a terminal inside the project folder.</li>
+              <li>Make sure the terminal is pointing to the correct project directory.</li>
+            </ul>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">10. Install Dependencies</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Run the following command:</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>npm install</code></pre></div>
+            <p class="text-xs text-slate-600 dark:text-slate-400">This installs the required dependencies for the project.</p>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 5 – Angular CLI Installation -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 5 – Angular CLI Installation</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">11. Install Angular CLI</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Install the Angular CLI globally using:</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>npm install -g @angular/cli</code></pre></div>
+            
+            <div class="mt-3 p-3 rounded-xl bg-purpleBrand-50 border border-purpleBrand-200 dark:bg-slate-800 dark:border-slate-700">
+              <p class="text-xs font-bold text-slate-900 dark:text-slate-100 mb-1">What is Angular CLI?</p>
+              <p class="text-xs text-slate-600 dark:text-slate-400">Angular CLI (Command Line Interface) is an official command-line tool used to create, manage, build, and test Angular applications directly from the terminal.</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 6 – Creating a Module -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 6 – Creating a Module</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">12. Create a Module Using Angular CLI</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">To create a new module in the QER project, use:</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>ng generate module module_name --project=qer</code></pre></div>
+            
+            <p class="text-xs font-bold text-slate-900 mt-2">Example</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>ng generate module sample-module --project=qer</code></pre></div>
+            <p class="text-xs text-slate-600 dark:text-slate-400">This command creates the new module inside the appropriate QER project folder.</p>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 7 – Creating an Angular Component -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 7 – Creating an Angular Component</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">13. Preview the Component Structure Using --dry-run</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Before actually creating the component, use the <code class="font-mono text-purpleBrand-600">--dry-run</code> option to verify what Angular CLI will generate.</p>
+            <p class="text-xs text-slate-600 dark:text-slate-400 font-semibold">Use:</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>ng generate component component_name --project=qer --style=scss --export --prefix=ccc --skip-tests --dry-run</code></pre></div>
+            
+            <p class="text-xs font-bold text-slate-900 mt-2">Example</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>ng generate component sample-component --project=qer --style=scss --export --prefix=ccc --skip-tests --dry-run</code></pre></div>
+
+            <div class="mt-3 p-3 rounded-xl bg-purpleBrand-50 border border-purpleBrand-200 dark:bg-slate-800 dark:border-slate-700 space-y-1">
+              <p class="text-xs font-bold text-slate-900 dark:text-slate-100">What does --dry-run do?</p>
+              <p class="text-xs text-slate-600 dark:text-slate-400">The <code class="font-mono">--dry-run</code> option runs the command as a simulation.</p>
+              <p class="text-xs text-slate-600 dark:text-slate-400">It displays:</p>
+              <ul class="list-disc pl-5 text-xs text-slate-600 dark:text-slate-400 space-y-0.5">
+                <li>Files that would be created</li>
+                <li>Folder paths</li>
+                <li>Module modifications</li>
+              </ul>
+              <p class="text-xs text-slate-600 dark:text-slate-400 pt-1">It does not actually modify the project or filesystem.</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 8 – Create the Component -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 8 – Create the Component</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900">14. Create the Component After Verification</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">After verifying the generated file structure using <code class="font-mono text-purpleBrand-600">--dry-run</code>, remove the <code class="font-mono text-purpleBrand-600">--dry-run</code> option.</p>
+            <p class="text-xs text-slate-600 dark:text-slate-400 font-semibold">Run:</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>ng generate component component_name --project=qer --style=scss --export --prefix=ccc --skip-tests</code></pre></div>
+            
+            <p class="text-xs font-bold text-slate-900 mt-2">Example</p>
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>ng generate component sample-component --project=qer --style=scss --export --prefix=ccc --skip-tests</code></pre></div>
+            <p class="text-xs text-slate-600 dark:text-slate-400">This command will actually create the component and its required files.</p>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 9 – Angular CLI Options -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 9 – Angular CLI Options</h3>
+
+          <div class="space-y-2">
+            <h4 class="text-base font-bold text-slate-900 mb-3">15. Explanation of Angular CLI Options</h4>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                <thead class="bg-purpleBrand-50 dark:bg-slate-800 text-purpleBrand-900 dark:text-purpleBrand-100 uppercase font-bold border-b border-slate-200 dark:border-slate-700">
+                  <tr>
+                    <th class="p-3 border-r border-slate-200 dark:border-slate-700 w-1/3">Option</th>
+                    <th class="p-3">Description</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">ng generate component component_name</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">The core command, shorthand <code class="font-mono">ng g c</code>, instructing Angular CLI to create a new component folder named <code class="font-mono">component_name</code>.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">--project=qer</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">Tells the CLI to place the component specifically inside the <code class="font-mono">qer</code> application or library folder structure.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">--style=scss</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">Configures the component to use SCSS (.scss) for styling instead of regular CSS.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">--export</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">Automatically adds the new component to the exports array of its host NgModule, if applicable in the workspace setup, making it accessible to other modules.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">--prefix=ccc</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">Overrides the default project selector prefix. The component's HTML selector will start with <code class="font-mono">ccc-</code>, for example, <code class="font-mono">&lt;ccc-component-name&gt;</code>.</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">--skip-tests</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">Prevents Angular CLI from generating a test configuration file (.spec.ts).</td>
+                  </tr>
+                  <tr>
+                    <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">--dry-run</td>
+                    <td class="p-3 text-slate-600 dark:text-slate-300">Runs the command as a simulation and displays the expected file paths and module modifications without modifying the filesystem.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 10 – Component Files -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 10 – Component Files</h3>
+
+          <div class="space-y-3">
+            <h4 class="text-base font-bold text-slate-900">16. Generated Component Files</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">After creating the component, Angular will generate the required files, such as:</p>
+
+            <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>sample-component/
+├── sample-component.component.html
+├── sample-component.component.scss
+└── sample-component.component.ts</code></pre></div>
+
+            <p class="text-xs text-slate-600 dark:text-slate-400">Since <code class="font-mono text-purpleBrand-600">--skip-tests</code> is used, the test file (.spec.ts) will not be generated.</p>
+
+            <div class="space-y-2 pt-2">
+              <p class="text-xs font-bold text-slate-900">Purpose of Each File</p>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                  <thead class="bg-purpleBrand-50 dark:bg-slate-800 text-purpleBrand-900 dark:text-purpleBrand-100 uppercase font-bold border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                      <th class="p-3 border-r border-slate-200 dark:border-slate-700 w-1/3">File</th>
+                      <th class="p-3">Purpose</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                    <tr>
+                      <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">.html</td>
+                      <td class="p-3 text-slate-600 dark:text-slate-300">Used for the UI/template</td>
+                    </tr>
+                    <tr>
+                      <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">.scss</td>
+                      <td class="p-3 text-slate-600 dark:text-slate-300">Used for styling</td>
+                    </tr>
+                    <tr>
+                      <td class="p-3 font-mono text-purpleBrand-600 font-semibold border-r border-slate-200 dark:border-slate-700">.ts</td>
+                      <td class="p-3 text-slate-600 dark:text-slate-300">Contains the component logic and methods</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 11 – Running the Project -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 11 – Running the Project</h3>
+
+          <div class="space-y-3">
+            <h4 class="text-base font-bold text-slate-900">17. Open Three Separate Terminals</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Open three separate terminals in the project environment.</p>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Run the projects in the following order:</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+              <div class="space-y-2">
+                <p class="text-xs font-bold text-slate-900">Terminal 1 – QBM</p>
+                <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>npm run build:watch qbm</code></pre></div>
+              </div>
+
+              <div class="space-y-2">
+                <p class="text-xs font-bold text-slate-900">Terminal 2 – QER</p>
+                <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>npm run build:watch qer</code></pre></div>
+              </div>
+
+              <div class="space-y-2">
+                <p class="text-xs font-bold text-slate-900">Terminal 3 – QER App Portal</p>
+                <div class="code-box p-3 rounded-xl"><pre class="text-xs font-mono"><code>npm run build:watch qer-app-portal</code></pre></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-slate-200 dark:border-slate-700">
+
+        <!-- Part 12 – Complete Setup Flow -->
+        <div class="space-y-4 text-sm text-slate-700">
+          <h3 class="text-lg font-extrabold text-purpleBrand-600 border-b border-slate-100 pb-2">Part 12 – Complete Setup Flow</h3>
+
+          <div class="space-y-3">
+            <h4 class="text-base font-bold text-slate-900">18. Installation & Execution Sequence</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400">Follow the overall sequence below:</p>
+
+            <div class="p-4 rounded-xl bg-purpleBrand-50/50 dark:bg-slate-800 border border-purpleBrand-200 dark:border-slate-700 font-mono text-xs text-center leading-relaxed text-purpleBrand-900 dark:text-purpleBrand-200">
+              Login to One Identity Manager<br>
+              ↓<br>
+              Access SkyTab<br>
+              ↓<br>
+              Start the 3 VMs<br>
+              ↓<br>
+              Administrator → Database → Client<br>
+              ↓<br>
+              Access Client VM<br>
+              ↓<br>
+              Download / Clone Project<br>
+              ↓<br>
+              Open Project Folder<br>
+              ↓<br>
+              npm install<br>
+              ↓<br>
+              Install Angular CLI<br>
+              ↓<br>
+              Create Module<br>
+              ↓<br>
+              Preview Component using --dry-run<br>
+              ↓<br>
+              Create Component<br>
+              ↓<br>
+              Run QBM<br>
+              ↓<br>
+              Run QER<br>
+              ↓<br>
+              Run QER App Portal
+            </div>
+
+            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-bold mt-3">
+              Key Rule: Always verify generated files using --dry-run before creating the component.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- COMPACT SINGLE-PAGE PRINT REPORT TEMPLATE -->
+  <div id="print-report" class="hidden">
+    <div>
+      <div class="pb-1.5 mb-2 flex justify-between items-center border-b-2 border-purpleBrand-500">
+        <div>
+          <h1 class="text-base font-black text-slate-900 uppercase tracking-tight">Learnlike - One Identity Learning Summary</h1>
+        </div>
+      </div>
+
+      <!-- Participant Details Card -->
+      <div class="print-card rounded mb-2 grid grid-cols-2 gap-2 border border-slate-300">
+        <div>
+          <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Participant Name</p>
+          <p id="print-name" class="text-xs font-black text-slate-900"></p>
+        </div>
+        <div>
+          <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Designation in Learnlike</p>
+          <p id="print-designation" class="text-xs font-black text-slate-900"></p>
+        </div>
+      </div>
+
+      <!-- Overall Dashboard Summary Card -->
+      <div class="print-card rounded mb-2 grid grid-cols-3 gap-1 text-center border border-slate-300">
+        <div>
+          <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Overall Progress</p>
+          <p id="print-stat-pct" class="text-sm font-black text-purpleBrand-600"></p>
+        </div>
+        <div>
+          <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Modules Completed</p>
+          <p id="print-stat-count" class="text-sm font-black text-slate-900"></p>
+        </div>
+        <div>
+          <p class="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Status</p>
+          <p id="print-stat-status" class="text-xs font-bold text-slate-800"></p>
+        </div>
+      </div>
+
+      <!-- Simple Table Form with Modules, Start, and End Dates -->
+      <div class="space-y-1">
+        <p class="text-[9px] font-black uppercase tracking-wider text-slate-800 border-b border-slate-300 pb-0.5">Module Execution Schedule</p>
+        <table class="w-full text-left border border-slate-300">
+          <thead>
+            <tr>
+              <th style="width: 52%;">Module Title</th>
+              <th style="width: 16%;">Status</th>
+              <th style="width: 16%;">Start Date</th>
+              <th style="width: 16%;">Completion Date</th>
+            </tr>
+          </thead>
+          <tbody id="print-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Verified and Sign off by section placed directly after table with spacing and 2-line gaps -->
+      <div class="mt-4 pt-2 flex justify-end text-[9px] text-slate-800">
+        <div class="text-left w-52 space-y-4">
+          <p class="font-extrabold text-slate-900 uppercase text-[9px] tracking-wider mb-2">VERIFIED AND SIGN OFF BY</p>
+          <div class="space-y-1 pt-6">
+            <p class="text-slate-400 border-b border-slate-400 pb-0.5"></p>
+            <p class="text-[8px] text-slate-500 text-right font-medium">Signature</p>
+          </div>
+          <div class="space-y-1 pt-6">
+            <p class="text-slate-400 border-b border-slate-400 pb-0.5"></p>
+            <p class="text-[8px] text-slate-500 text-right font-medium">Date</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let userProfile = JSON.parse(localStorage.getItem("learnlike_user")) || { fullName: "", designation: "" };
+    
+    function formatEmbedUrl(url) {
+      if (!url) return '';
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+    }
+
+    // Linear Path Including Prerequisite Crash Courses & 20 Official Web Dev Modules
+    const linearPath = [
+      {
+        phase: "Phase 0: Prerequisites & Tech Stack Crash Courses",
+        description: "Essential fast-track refresher modules covering TypeScript, Angular, and Node.js fundamentals before starting One Identity development.",
+        modules: [
+          { id: "cc-1", title: "TypeScript Crash Course in 20 Minutes", est: "< 20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=zQnBQ4tB3ZA") },
+          { id: "cc-2", title: "Angular Basics in 20 Minutes", est: "< 20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=3qBXWUpoPHo") },
+          { id: "cc-3", title: "Node.js & npm Quick Primer", est: "< 15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=TlB_eWDSMt4") }
+        ]
+      },
+      {
+        phase: "Phase 1: Environment Setup & Angular Foundations",
+        description: "Initial workspace configuration, workstation setup, and Angular baseline concepts.",
+        modules: [
+          { id: "1im-1", title: "Identity Manager | Angular Web Development #1 | Introduction and Prerequisites", est: "15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=8fJ-1T4cCvY") },
+          { id: "1im-2", title: "Identity Manager | Angular Web Development #2 | Preparing a Windows 10 WKS", est: "15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=wSdhZIv3YCM") },
+          { id: "1im-3", title: "Identity Manager | Angular Web Development #3 | Preparing a Linux Mint Desktop", est: "15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=EKUhy1riTrE") },
+          { id: "1im-4", title: "Identity Manager | Angular Web Development #4 | First steps in Angular #1", est: "15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=mDNiIYPJ51I") },
+          { id: "1im-5", title: "Identity Manager | Angular Web Development #5 | First steps in Angular #2", est: "15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=g65L7O8b1eg") },
+          { id: "1im-6", title: "Identity Manager | Angular Web Development #6 | First steps in Angular #3", est: "15 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=BUmwCBWrKt0") }
+        ]
+      },
+      {
+        phase: "Phase 2: Standard Web Portal Customizations",
+        description: "Hands-on modifications and UI enhancements to the Standard Web Portal.",
+        modules: [
+          { id: "1im-7", title: "Identity Manager | Angular Web Development #7 | Modifying the Standard Web Portal #1", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=dJMioSy0CiU") },
+          { id: "1im-8", title: "Identity Manager | Angular Web Development #8 | Modifying the Standard Web Portal #2", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=jeLiB9Cu6MA") },
+          { id: "1im-9", title: "Identity Manager | Angular Web Development #9 | Modifying the Standard Web Portal #3", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=ypw4mKEtl8g") },
+          { id: "1im-10", title: "Identity Manager | Angular Web Development #10 | Modifying the Standard Web Portal #4", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=redDuhGo3fc") },
+          { id: "1im-11", title: "Identity Manager | Angular Web Development #11 | Modifying the Standard Web Portal #5", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=zSSpul8Ez6g") },
+          { id: "1im-12", title: "Identity Manager | Angular Web Development #12 | Modifying the Standard Web Portal #6", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=4WPv407Bs7w") }
+        ]
+      },
+      {
+        phase: "Phase 3: Advanced Web Portal & CDR Framework",
+        description: "Extending portal functionality and deep-dive into the IMX Web CDR Framework.",
+        modules: [
+          { id: "1im-13", title: "Identity Manager | Angular Web Development #13 | Modifying the Standard Web Portal #7", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=sDnLV5sGomo") },
+          { id: "1im-14", title: "Identity Manager | Angular Web Development #14 | Modifying the Standard Web Portal #8", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=EZFxaOKDtpM") },
+          { id: "1im-15", title: "Identity Manager | Angular Web Development #15 | IMX Web CDR Framework 1/2 #9", est: "25 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=JLxLApGTf0E") },
+          { id: "1im-16", title: "Identity Manager | Angular Web Development #16 | Modifying the Standard Web Portal #10", est: "25 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=aute739C33w") }
+        ]
+      },
+      {
+        phase: "Phase 4: API Server Development & Extensions",
+        description: "Server-side integration, configuration layers, Postman interaction, and API extension development.",
+        modules: [
+          { id: "1im-17", title: "Identity Manager | Angular Web Development #17 | API-Server Dev. Overview", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=tK7HnhXBnV4") },
+          { id: "1im-18", title: "Identity Manager | Angular Web Development #18 | API-Server Configuration Layer", est: "20 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=qvKx3tFLjiw") },
+          { id: "1im-19", title: "Identity Manager | Angular Web Development #19 | Using Open Interface & Postman", est: "25 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=_O12L2dXBJE") },
+          { id: "1im-20", title: "Identity Manager | Angular Web Development #20 | API Server Extension Dev", est: "30 Mins", video: formatEmbedUrl("https://www.youtube.com/watch?v=hdRRMyNamnY") }
+        ]
+      }
+    ];
+
+    let moduleProgress = JSON.parse(localStorage.getItem("learnlike_module_progress")) || {};
+
+    window.onload = function() {
+      if (!userProfile.fullName || !userProfile.designation) {
+        document.getElementById("profile-modal").classList.remove("hidden");
+      } else {
+        document.getElementById("profile-modal").classList.add("hidden");
+        updateUserDisplay();
+      }
+      renderLinearPath();
+    };
+
+    function saveUserProfile(e) {
+      e.preventDefault();
+      userProfile.fullName = document.getElementById("input-full-name").value;
+      userProfile.designation = document.getElementById("input-designation").value;
+      localStorage.setItem("learnlike_user", JSON.stringify(userProfile));
+      document.getElementById("profile-modal").classList.add("hidden");
+      updateUserDisplay();
+    }
+
+    function editProfile() {
+      document.getElementById("input-full-name").value = userProfile.fullName || "";
+      document.getElementById("input-designation").value = userProfile.designation || "";
+      document.getElementById("profile-modal").classList.remove("hidden");
+    }
+
+    function updateUserDisplay() {
+      document.getElementById("user-display").innerText = `Participant: ${userProfile.fullName} (${userProfile.designation})`;
+    }
+
+    function renderLinearPath() {
+      const container = document.getElementById("linear-path-container");
+      container.innerHTML = "";
+
+      let totalModules = 0;
+      let completedCount = 0;
+      let anyStarted = false;
+
+      linearPath.forEach((phase, index) => {
+        const phaseBox = document.createElement("div");
+        phaseBox.className = "relative pl-6 md:pl-10 space-y-4";
+        
+        let phaseHtml = `
+          <div class="absolute left-0 md:left-3 top-1 -translate-x-1/2 w-6 h-6 rounded-full bg-purpleBrand-500 border-4 border-slate-50 flex items-center justify-center shadow-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+          </div>
+          
+          <div class="bg-white p-6 rounded-2xl border border-purpleBrand-100 shadow-sm space-y-4">
+            <div>
+              <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-purpleBrand-50 text-purpleBrand-700 border border-purpleBrand-200">${index === 0 ? 'Crash Course' : 'Phase ' + index}</span>
+              <h3 class="text-lg font-black text-slate-900 mt-1">${phase.phase}</h3>
+              <p class="text-xs text-slate-500">${phase.description}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        `;
+
+        phase.modules.forEach(m => {
+          totalModules++;
+          const track = moduleProgress[m.id] || { status: 'NOT_STARTED', startDate: null, endDate: null };
+          if (track.status === 'COMPLETED') completedCount++;
+          if (track.status === 'IN_PROGRESS' || track.status === 'COMPLETED') anyStarted = true;
+
+          let statusBadge = `<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500">Not Started</span>`;
+          if (track.status === 'IN_PROGRESS') statusBadge = `<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-purpleBrand-50 text-purpleBrand-600 border border-purpleBrand-200">In Progress</span>`;
+          if (track.status === 'COMPLETED') statusBadge = `<span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-200">Completed</span>`;
+
+          phaseHtml += `
+            <div class="p-4 rounded-xl border border-purpleBrand-100/60 dark:border-slate-700 bg-purpleBrand-50/30 dark:bg-slate-800/50 flex flex-col justify-between space-y-3 hover:border-purpleBrand-300 transition-colors">
+              <div class="space-y-2">
+                <div class="aspect-video w-full rounded-lg overflow-hidden bg-slate-200 border border-slate-300">
+                  <iframe class="w-full h-full" src="${m.video}" loading="lazy" title="${m.title}" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-[11px] font-extrabold text-purpleBrand-600">${m.est}</span>
+                  ${statusBadge}
+                </div>
+                <h4 class="text-sm font-bold text-slate-900">${m.title}</h4>
+                <div class="text-[10px] text-slate-500 space-y-0.5 pt-1 border-t border-purpleBrand-100/50">
+                  <p>Start Date: <b>${track.startDate || 'Not Started'}</b></p>
+                  <p>Completed Date: <b>${track.endDate || 'Not Completed'}</b></p>
+                </div>
+              </div>
+
+              <div class="pt-2 flex gap-2 justify-end">
+                ${track.status === 'NOT_STARTED' ? `
+                  <button onclick="startModule('${m.id}')" class="px-3 py-1 bg-purpleBrand-600 hover:bg-purpleBrand-700 text-white text-xs font-bold rounded-lg transition shadow-sm">Start Module</button>
+                ` : ''}
+                ${track.status === 'IN_PROGRESS' ? `
+                  <button onclick="completeModule('${m.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-sm">Mark Completed</button>
+                ` : ''}
+                ${track.status === 'COMPLETED' ? `
+                  <button onclick="resetModule('${m.id}')" class="px-2 py-1 bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-300 transition">Reset</button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        phaseHtml += `</div></div>`;
+        phaseBox.innerHTML = phaseHtml;
+        container.appendChild(phaseBox);
+      });
+
+      const pct = Math.round((completedCount / totalModules) * 100);
+      document.getElementById("stat-progress-pct").innerText = `${pct}%`;
+      document.getElementById("stat-progress-bar").style.width = `${pct}%`;
+      document.getElementById("stat-completed-mods").innerText = `${completedCount} / ${totalModules}`;
+      
+      let overallStatus = "Not Started";
+      if (pct === 100) {
+        overallStatus = "Ready for VM Capstone!";
+      } else if (anyStarted) {
+        overallStatus = "In Progress";
+      }
+      document.getElementById("stat-status-text").innerText = overallStatus;
+    }
+
+    function startModule(id) {
+      const dateStr = new Date().toISOString().split('T')[0];
+      moduleProgress[id] = { status: 'IN_PROGRESS', startDate: dateStr, endDate: null };
+      localStorage.setItem("learnlike_module_progress", JSON.stringify(moduleProgress));
+      renderLinearPath();
+    }
+
+    function completeModule(id) {
+      const dateStr = new Date().toISOString().split('T')[0];
+      const existing = moduleProgress[id] || {};
+      moduleProgress[id] = { 
+        status: 'COMPLETED', 
+        startDate: existing.startDate || dateStr, 
+        endDate: dateStr 
+      };
+      localStorage.setItem("learnlike_module_progress", JSON.stringify(moduleProgress));
+      renderLinearPath();
+    }
+
+    function resetModule(id) {
+      delete moduleProgress[id];
+      localStorage.setItem("learnlike_module_progress", JSON.stringify(moduleProgress));
+      renderLinearPath();
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden-view"));
+      document.getElementById(viewId).classList.remove("hidden-view");
+
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("text-purpleBrand-600", "border-b-2", "border-purpleBrand-500"));
+      if (viewId === 'modules-view') document.getElementById("nav-modules-btn").classList.add("text-purpleBrand-600", "border-b-2", "border-purpleBrand-500");
+      if (viewId === 'vm-guide-view') document.getElementById("nav-vm-btn").classList.add("text-purpleBrand-600", "border-b-2", "border-purpleBrand-500");
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      if (html.classList.contains("dark")) {
+        html.classList.remove("dark");
+        document.getElementById("theme-icon").innerText = "🌙";
+        document.getElementById("theme-text").innerText = "Dark Mode";
+      } else {
+        html.classList.add("dark");
+        document.getElementById("theme-icon").innerText = "☀️";
+        document.getElementById("theme-text").innerText = "Light Mode";
+      }
+    }
+
+    function exportPDF() {
+      if (!userProfile.fullName) {
+        editProfile();
+        return;
+      }
+
+      document.getElementById("print-name").innerText = userProfile.fullName;
+      document.getElementById("print-designation").innerText = userProfile.designation;
+
+      let completedCount = 0;
+      let totalModules = 0;
+      let anyStarted = false;
+
+      const tableBody = document.getElementById("print-table-body");
+      tableBody.innerHTML = "";
+
+      linearPath.forEach(phase => {
+        phase.modules.forEach(m => {
+          totalModules++;
+          const track = moduleProgress[m.id] || { status: 'NOT_STARTED', startDate: '-', endDate: '-' };
+          if (track.status === 'COMPLETED') completedCount++;
+          if (track.status === 'IN_PROGRESS' || track.status === 'COMPLETED') anyStarted = true;
+
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td class="font-semibold">${m.title}</td>
+            <td><span class="font-bold">${track.status}</span></td>
+            <td>${track.startDate || '-'}</td>
+            <td>${track.endDate || '-'}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+      });
+
+      const pct = Math.round((completedCount / totalModules) * 100);
+      document.getElementById("print-stat-pct").innerText = `${pct}%`;
+      document.getElementById("print-stat-count").innerText = `${completedCount} / ${totalModules}`;
+      
+      let overallStatus = "Not Started";
+      if (pct === 100) {
+        overallStatus = "Completed";
+      } else if (anyStarted) {
+        overallStatus = "In Progress";
+      }
+      document.getElementById("print-stat-status").innerText = overallStatus;
+
+      window.print();
+    }
+  </script>
+</body>
+</html>
